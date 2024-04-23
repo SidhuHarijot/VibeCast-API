@@ -1,3 +1,5 @@
 fastapi
 requests
 uvicorn
+spotipy
+python-decouple
