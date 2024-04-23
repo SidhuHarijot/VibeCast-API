@@ -4,3 +4,4 @@ temp_file/
 
 # ignore temp csv files
 *.csv
+*.env

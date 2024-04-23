@@ -21,7 +21,7 @@ def login():
     # print("[LOGIN]: " + ", ".join(os.environ))
     # client_id = os.environ["SPOTIFY_CLIENT_ID"]
     # print("[LOGIN]: " + os.environ)
-    redirect_uri = "http://vibecast-api.onrender.com/callback"
+    redirect_uri = "https://vibecast-api.onrender.com/callback"
     scope = "user-read-private user-read-email"
     # Direct user to Spotify authorization URL
     return RedirectResponse(
@@ -34,7 +34,7 @@ def callback(code: str, state: str = None):
     print("[]")
     client_credentials = get_client_credentials()
     token_url = "https://accounts.spotify.com/api/token"
-    redirect_uri = "http://vibecast-api.onrender.com/callback"
+    redirect_uri = "https://vibecast-api.onrender.com/callback"
     headers = {
         "Authorization": f"Basic {client_credentials}",
         "Content-Type": "application/x-www-form-urlencoded"
