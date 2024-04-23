@@ -1,4 +1,2 @@
 fastapi
 requests
-csv
-base64
