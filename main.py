@@ -139,7 +139,7 @@ class Track(BaseModel):
     name: str
     genre: list[str]
     id: str
-    external_urls: str
+    external_url: str
     artists: list[str]
 
 class Cities(BaseModel):
@@ -271,9 +271,9 @@ def get_top_50(country_code: str):
         for tag in tags:
             taglist.append(tag.item.get_name())
         if tags:
-            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_urls=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
+            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
-            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""]), external_urls=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']])
+            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""], external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
     return PlayList(name=f"Top 50 {country_name} {date.today()}", id=results['playlists']['items'][0]['id'], tracks=tracksList)
 
 
