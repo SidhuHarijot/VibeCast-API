@@ -2,5 +2,5 @@ fastapi
 requests
 uvicorn
 spotipy
-dotenv
+python-dotenv
 pylast
