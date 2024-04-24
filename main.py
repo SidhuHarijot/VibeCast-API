@@ -9,6 +9,7 @@ import httpx
 import pylast
 from datetime import date
 import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 
 # This will hold all city data from the CSV file
 all_cities = {}
@@ -81,6 +82,24 @@ weather_mood_mapping = {
 
 
 app = FastAPI()
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+    "https://client-resume-upload-p9g0bmvaf-harijot-singhs-projects.vercel.app",
+    "https://client-resume-upload.vercel.app",
+    "https://client-resume-upload-git-master-harijot-singhs-projects.vercel.app"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def load_city_data():
