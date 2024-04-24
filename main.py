@@ -2,14 +2,18 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import RedirectResponse
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
-from decouple import config, update_config
+import dotenv
 import os
 
 app = FastAPI()
 
-client_id = config('SPOTIFY_CLIENT_ID')
-client_secret = config('SPOTIFY_CLIENT_SECRET')
-redirect_uri = config('REDIRECT_URI')  # Ensure this is set to your server/callback endpoint
+envFile = dotenv.find_dotenv()
+dotenv.load_dotenv(envFile)
+
+
+client_id = dotenv.get_key(envFile, 'SPOTIFY_CLIENT_ID')
+client_secret = dotenv.get_key(envFile, 'SPOTIFY_CLIENT_SECRET')
+redirect_uri = dotenv.get_key(envFile, 'REDIRECT_URI')  # Ensure this is set to your server/callback endpoint
 scope = "playlist-read-private"
 
 sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope)
@@ -27,14 +31,14 @@ def callback(code: str):
     if 'refresh_token' in token_info:
         # Update the environment variable (this should ideally be stored more securely)
         os.environ['SPOTIFY_REFRESH_TOKEN'] = token_info['refresh_token']
-        update_config('.env', {'SPOTIFY_REFRESH_TOKEN': token_info['refresh_token']})
+        dotenv.set_key(envFile, '.env', {'SPOTIFY_REFRESH_TOKEN': token_info['refresh_token']})
         return {"message": "Authentication successful", "refresh_token": token_info['refresh_token']}
     else:
         raise HTTPException(status_code=500, detail="Failed to obtain refresh token")
 
 def get_spotify_client():
     """ Returns a Spotify client using the refresh token for automated access token renewal """
-    refresh_token = config('SPOTIFY_REFRESH_TOKEN')
+    refresh_token = dotenv.get_key(envFile, 'SPOTIFY_REFRESH_TOKEN')
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token found. Please log in.")
     
