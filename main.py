@@ -5,10 +5,77 @@ from spotipy.oauth2 import SpotifyOAuth
 import dotenv
 from pydantic import BaseModel
 import csv
+import httpx
 import pylast
 
 # This will hold all city data from the CSV file
 all_cities = {}
+
+mood_genre_mapping = {
+    "happy": ["pop", "dance", "disco", "funk", "electropop", "house", "bubblegum", "reggae", "ska", "upbeat", "soul", "boogie", "sassy", "nu-disco", "future", "funk", "nudisco", "party", "1999", "soulful", "groovy", "synth", "bop", "catchy", "uplifting", "joyful", "summer", "happy", "playful"],
+    "sad": ["blues", "ballad", "acoustic", "singer-songwriter", "piano", "emo", "slow", "melancholic", "soft", "minor", "downbeat", "sad", "heartbreak", "melancholic", "pensive", "down", "breakup", "cry", "mournful", "sorrowful", "tearful", "weepy", "doleful", "gloomy", "lugubrious"],
+    "chill": ["ambient", "lounge", "trip-hop", "soft rock", "downtempo", "jazz", "chillwave", "instrumental", "acoustic", "lo-fi", "mellow", "chill", "calm", "relaxing", "soothing", "serene", "quiet", "tranquil", "peaceful", "smooth", "ethereal", "airy", "gentle", "light"],
+    "motivated": ["rock", "hard rock", "metal", "hip-hop", "drum and bass", "anthem", "electronic", "uplifting", "energetic", "power pop", "motivated", "drive", "driving", "pump", "workout", "gym", "upbeat", "energize", "excite", "thrilling", "amp", "amped", "psyched"],
+    "soft": ["acoustic", "soft rock", "easy listening", "neoclassical", "quiet", "folk", "serene", "light", "peaceful", "smooth", "lullaby", "tender", "gentle", "soothing", "delicate", "subdued", "tranquil", "placid", "calm", "restful", "whispery", "ethereal", "airy", "featherlight"],
+}
+
+weather_mood_mapping = {
+    200: ["sad"],
+    201: ["sad"],
+    202: ["sad"],
+    210: ["sad"],
+    211: ["sad"],
+    212: ["sad"],
+    221: ["sad"],
+    230: ["sad"],
+    231: ["sad"],
+    232: ["sad"],
+    300: ["soft", "chill"],
+    301: ["soft", "chill"],
+    302: ["soft", "chill"],
+    310: ["soft", "chill"],
+    311: ["soft", "chill"],
+    312: ["soft", "chill"],
+    313: ["soft", "chill"],
+    314: ["soft", "chill"],
+    321: ["soft", "chill"],
+    500: ["soft", "happy"],
+    501: ["soft"],
+    502: ["sad"],
+    503: ["sad"],
+    504: ["sad"],
+    511: ["sad"],
+    520: ["chill"],
+    521: ["chill"],
+    522: ["chill"],
+    531: ["chill"],
+    600: ["happy"],
+    601: ["happy"],
+    602: ["happy"],
+    611: ["chill"],
+    612: ["chill"],
+    613: ["chill"],
+    615: ["chill"],
+    616: ["chill"],
+    620: ["happy"],
+    621: ["happy"],
+    622: ["happy"],
+    701: ["soft"],
+    711: ["sad"],
+    721: ["soft"],
+    731: ["chill"],
+    741: ["soft"],
+    751: ["sad"],
+    761: ["sad"],
+    762: ["sad"],
+    771: ["motivated"],
+    781: ["sad"],
+    800: ["happy", "motivated"],
+    801: ["happy", "soft"],
+    802: ["happy", "soft"],
+    803: ["soft"],
+    804: ["soft", "chill"]
+}
 
 
 app = FastAPI()
@@ -18,15 +85,8 @@ def load_city_data():
     with open('data/worldcities.csv', 'r', encoding='utf-8') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            all_cities.append(Cities(
-                name=row['city_ascii'],
-                country=row['country'],
-                iso2=row['iso2'],
-                lat=float(row['lat']),
-                lon=float(row['lng'])
-            )
-            )
             all_cities[row['city_ascii']] = {"country": row['country'], "iso2": row['iso2'], "lat": float(row['lat']), "lon": float(row['lng'])}
+            
 
 envFile = dotenv.find_dotenv()
 dotenv.load_dotenv(envFile)
