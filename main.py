@@ -262,21 +262,22 @@ def get_top_50(country_code: str):
     spotify = get_spotify_client()
     country_name = get_country_name(country_code)
     results = spotify.search(q=f"top+50+{country_name}", type='playlist', limit=50, market=country_code)
-    tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name), external_urls(spotify)))')
+    tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name, genres), external_urls(spotify)))')
     tracksList = []
     for track in tracks["items"]:
         try: 
             lastfmTrack = pylastNetwork.get_track(track['track']['artists'][0]['name'], track['track']['name'])
             tags = lastfmTrack.get_top_tags()
         except pylast.WSError:
-            tags = []
+            tags = None
         taglist = []
         for tag in tags:
             taglist.append(tag.item.get_name())
-        if tags:
+        if taglist != []:
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
-            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""], external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
+            genres = [genre for artist in track['track']['artists'] for genre in artist['genres']]
+            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=genres, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
     return PlayList(name=f"Top 50 {country_name} {date.today()}", id=results['playlists']['items'][0]['id'], tracks=tracksList)
 
 
