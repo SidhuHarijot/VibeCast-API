@@ -241,7 +241,8 @@ def create_playlist(playlist: PlayList):
     playlist_created = spotify.user_playlist_create(user=username, name=playlist.name, public=True)
     playlist_id = playlist_created['id']
     spotify.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_ids)
-    return playlist_created["external_urls"]["spotify"]
+    print(playlist_created["external_urls"]["spotify"])
+    return {"url": playlist_created["external_urls"]["spotify"]}
 
 if __name__ == "__main__":
     load_city_data()
