@@ -88,6 +88,9 @@ origins = [
     "https://localhost.tiangolo.com",
     "http://localhost",
     "http://localhost:8080",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:5000",
     "https://client-resume-upload-p9g0bmvaf-harijot-singhs-projects.vercel.app",
     "https://client-resume-upload.vercel.app",
     "https://client-resume-upload-git-master-harijot-singhs-projects.vercel.app"
