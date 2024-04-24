@@ -11,6 +11,9 @@ from datetime import date
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 
+
+
+#region constants
 # This will hold all city data from the CSV file
 all_cities = {}
 
@@ -79,8 +82,9 @@ weather_mood_mapping = {
     803: ["soft"],
     804: ["soft", "chill"]
 }
+#endregion
 
-
+#region FastAPI
 app = FastAPI()
 
 origins = [
@@ -112,8 +116,9 @@ def load_city_data():
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             all_cities[row['city_ascii']] = {"country": row['country'], "iso2": row['iso2'], "lat": float(row['lat']), "lon": float(row['lng'])}
-            
+#endregion
 
+#region Environment Variables
 envFile = dotenv.find_dotenv()
 dotenv.load_dotenv(envFile)
 
@@ -126,11 +131,16 @@ scope = "playlist-read-private playlist-modify-public playlist-modify-private"
 openweather_api_key = dotenv.get_key(envFile, "WEATHER_API")
 
 sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope)
+#endregion
 
+
+#region Models
 class Track(BaseModel):
     name: str
     genre: list[str]
     id: str
+    external_urls: str
+    artists: list[str]
 
 class Cities(BaseModel):
     name: str
@@ -150,7 +160,9 @@ class CompleteResponse(BaseModel):
     weatherCode: int
     weatherDescription: str
     playlist: PlayList
+#endregion
 
+#region Routes
 @app.get("/cities", response_model=list[Cities])
 def get_cities():
     cities = []
@@ -159,13 +171,16 @@ def get_cities():
     print(cities)
     return cities
 
+
+
 @app.get("/login")
 def login():
     """ Redirect to Spotify to authorize and get the initial refresh token """
     auth_url = sp_oauth.get_authorize_url()
     return RedirectResponse(auth_url)
 
-@app.get("/moodFiltered", response_model=CompleteResponse)
+
+@app.get("/moodFiltered/{city}", response_model=CompleteResponse)
 async def get_mood_filtered(city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
@@ -180,6 +195,10 @@ async def get_mood_filtered(city: str, playlist: PlayList):
     weather_data = resp.json()
     weather_code = int(weather_data["current"]["weather"][0]["id"])
     moods = weather_mood_mapping.get(weather_code, ["Neutral"])
+    return _get_mood_filtered(city, playlist, moods, weather_code, weather_data["current"]["weather"][0]["description"])
+
+
+def _get_mood_filtered(city: str, playlist: PlayList, moods: list[str], weather_code: int=-1, weather_description: str=""):
     tags = []
     for mood in moods:
         tags.extend(mood_genre_mapping.get(mood, []))
@@ -193,9 +212,19 @@ async def get_mood_filtered(city: str, playlist: PlayList):
     # Construct and return the complete response
     return CompleteResponse(
         weatherCode=weather_code,
-        weatherDescription=weather_data["current"]["weather"][0]["description"],
+        weatherDescription=weather_description,
         playlist=new_playlist
         )
+
+@app.get("/moodFiltered/{city}/moods")
+async def get_mood_filtered(city: str, mood: list[str], playlist: PlayList):
+    return _get_mood_filtered(city, playlist, mood)
+
+
+@app.get("/get/moods")
+def get_moods():
+    return mood_genre_mapping.keys()
+
 
 @app.get("/callback")
 def callback(code: str):
@@ -207,6 +236,8 @@ def callback(code: str):
     else:
         raise HTTPException(status_code=500, detail="Failed to obtain refresh token")
 
+
+
 def get_spotify_client():
     """ Returns a Spotify client using the refresh token for automated access token renewal """
     refresh_token = dotenv.get_key(envFile, 'SPOTIFY_REFRESH_TOKEN')
@@ -216,11 +247,22 @@ def get_spotify_client():
     token_info = sp_oauth.refresh_access_token(refresh_token)
     return Spotify(auth=token_info['access_token'])
 
+
+def get_country_name(country_code: str):
+    """ Returns the country name from the country code """
+    for city in all_cities:
+        if all_cities[city]['iso2'] == country_code:
+            return all_cities[city]['country']
+    return "Global"
+
+
+
 @app.get("/top-50/{country_code}")
 def get_top_50(country_code: str):
     spotify = get_spotify_client()
-    results = spotify.search(q="top50", type='playlist', limit=50, market=country_code)
-    tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name)))')
+    country_name = get_country_name(country_code)
+    results = spotify.search(q=f"top+50+{country_name}", type='playlist', limit=50, market=country_code)
+    tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name), external_urls(spotify)))')
     tracksList = []
     for track in tracks["items"]:
         lastfmTrack = pylastNetwork.get_track(track['track']['artists'][0]['name'], track['track']['name'])
@@ -229,10 +271,12 @@ def get_top_50(country_code: str):
         for tag in tags:
             taglist.append(tag.item.get_name())
         if tags:
-            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist))
+            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_urls=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
-            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""]))
-    return PlayList(name="Top 50 ", id=results['playlists']['items'][0]['id'], tracks=tracksList)
+            tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""]), external_urls=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']])
+    return PlayList(name=f"Top 50 {country_name} {date.today()}", id=results['playlists']['items'][0]['id'], tracks=tracksList)
+
+
 
 @app.post("/spotify-playlist/")
 def create_playlist(playlist: PlayList):
@@ -245,6 +289,9 @@ def create_playlist(playlist: PlayList):
     spotify.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_ids)
     print(playlist_created["external_urls"]["spotify"])
     return {"url": playlist_created["external_urls"]["spotify"]}
+#endregion
+
+
 
 if __name__ == "__main__":
     load_city_data()
