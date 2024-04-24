@@ -148,7 +148,10 @@ class CompleteResponse(BaseModel):
 
 @app.get("/cities", response_model=list[Cities])
 def get_cities():
-    return all_cities
+    cities = []
+    for city in all_cities.keys():
+        cities.append(Cities(name=city, country=all_cities[city]['country'], iso2=all_cities[city]['iso2'], lat=all_cities[city]['lat'], lon=all_cities[city]['lon']))
+    return cities
 
 @app.get("/login")
 def login():
@@ -161,7 +164,6 @@ async def get_mood_filtered(city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
     cityData = all_cities.get(city)
-    print(cityData)
     lat, lon = cityData.get('lat'), cityData.get('lon')
     weather_url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly,daily,alerts&appid={openweather_api_key}&units=metric"
     
@@ -172,7 +174,6 @@ async def get_mood_filtered(city: str, playlist: PlayList):
     weather_data = resp.json()
     weather_code = int(weather_data["current"]["weather"][0]["id"])
     moods = weather_mood_mapping.get(weather_code, ["Neutral"])
-    print(weather_code, moods)
     tags = []
     for mood in moods:
         tags.extend(mood_genre_mapping.get(mood, []))
