@@ -265,8 +265,11 @@ def get_top_50(country_code: str):
     tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name), external_urls(spotify)))')
     tracksList = []
     for track in tracks["items"]:
-        lastfmTrack = pylastNetwork.get_track(track['track']['artists'][0]['name'], track['track']['name'])
-        tags = lastfmTrack.get_top_tags()
+        try: 
+            lastfmTrack = pylastNetwork.get_track(track['track']['artists'][0]['name'], track['track']['name'])
+            tags = lastfmTrack.get_top_tags()
+        except pylast.WSError:
+            tags = []
         taglist = []
         for tag in tags:
             taglist.append(tag.item.get_name())
