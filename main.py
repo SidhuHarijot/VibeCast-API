@@ -29,9 +29,7 @@ def callback(code: str):
     """ Handle callback from Spotify, store refresh token """
     token_info = sp_oauth.get_access_token(code)
     if 'refresh_token' in token_info:
-        # Update the environment variable (this should ideally be stored more securely)
-        os.environ['SPOTIFY_REFRESH_TOKEN'] = token_info['refresh_token']
-        dotenv.set_key(envFile, '.env', {'SPOTIFY_REFRESH_TOKEN': token_info['refresh_token']})
+        dotenv.set_key(envFile, "SPOTIFY_REFRESH_TOKEN", token_info['refresh_token'])
         return {"message": "Authentication successful", "refresh_token": token_info['refresh_token']}
     else:
         raise HTTPException(status_code=500, detail="Failed to obtain refresh token")
