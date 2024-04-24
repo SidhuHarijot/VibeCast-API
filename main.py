@@ -91,11 +91,10 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:5000",
-    "https://client-resume-upload-p9g0bmvaf-harijot-singhs-projects.vercel.app",
-    "https://client-resume-upload.vercel.app",
-    "https://client-resume-upload-git-master-harijot-singhs-projects.vercel.app",
     "https://vibecast.vercel.app/",
-    "https://vibecast-harijot-singhs-projects.vercel.app/"
+    "https://vibecast.vercel.app",
+    "https://vibecast-harijot-singhs-projects.vercel.app/",
+    ""
 ]
 
 app.add_middleware(
@@ -104,6 +103,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    
 )
 
 @app.on_event("startup")
@@ -186,7 +186,7 @@ async def get_mood_filtered(city: str, playlist: PlayList):
     new_playlist = PlayList(name="Playlist " + city + " " + str(date.today()) + " " + " ".join(mood for mood in moods), id="1", tracks=[])
     for track in playlist.tracks:
         if track.genre is None:
-            con
+            continue
         if any(tag in track.genre for tag in tags):
             new_playlist.tracks.append(track)
 
@@ -219,7 +219,7 @@ def get_spotify_client():
 @app.get("/top-50/{country_code}")
 def get_top_50(country_code: str):
     spotify = get_spotify_client()
-    results = spotify.search(q="top 50", type='playlist', limit=50, market=country_code)
+    results = spotify.search(q="top50", type='playlist', limit=50, market=country_code)
     tracks = spotify.playlist_tracks(results['playlists']['items'][0]['id'], fields='items(track(name, id, artists(id,name)))')
     tracksList = []
     for track in tracks["items"]:
