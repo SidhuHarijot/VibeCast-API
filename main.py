@@ -47,7 +47,7 @@ def get_spotify_client():
 def get_top_50(country_code: str):
     spotify = get_spotify_client()
     results = spotify.search(q="top 50", type='playlist', limit=50, market=country_code)
-    # Further processing to fetch playlists, genres, etc. goes here...
+    return results
 
 if __name__ == "__main__":
     import uvicorn

@@ -4,3 +4,4 @@ uvicorn
 spotipy
 python-dotenv
 pylast
+pydantic
