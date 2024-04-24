@@ -7,6 +7,8 @@ from pydantic import BaseModel
 import csv
 import httpx
 import pylast
+from datetime import date
+import asyncio
 
 # This will hold all city data from the CSV file
 all_cities = {}
@@ -136,10 +138,11 @@ def login():
     return RedirectResponse(auth_url)
 
 @app.get("/moodFiltered", response_model=CompleteResponse)
-async def get_mood_filtered(city: str):
+async def get_mood_filtered(city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
     cityData = all_cities.get(city)
+    print(cityData)
     lat, lon = cityData.get('lat'), cityData.get('lon')
     weather_url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly,daily,alerts&appid={openweather_api_key}&units=metric"
     
@@ -147,26 +150,26 @@ async def get_mood_filtered(city: str):
         resp = await client.get(weather_url)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail="Error fetching weather data")
-
     weather_data = resp.json()
-    weather_condition = weather_data["current"]["weather"][0]["main"]
-    
-    # Map the weather condition to a mood
-    mood = WEATHER_TO_MOOD.get(weather_condition, "Neutral")
-
-    # Use mood to filter Spotify playlists (Placeholder: Implement Spotify API call to fetch playlists by mood)
-    # playlists = ...
+    weather_code = int(weather_data["current"]["weather"][0]["id"])
+    moods = weather_mood_mapping.get(weather_code, ["Neutral"])
+    print(weather_code, moods)
+    tags = []
+    for mood in moods:
+        tags.extend(mood_genre_mapping.get(mood, []))
+    new_playlist = PlayList(name="Playlist " + city + " " + str(date.today()) + " " + " ".join(mood for mood in moods), id="1", tracks=[])
+    for track in playlist.tracks:
+        if track.genre is None:
+            con
+        if any(tag in track.genre for tag in tags):
+            new_playlist.tracks.append(track)
 
     # Construct and return the complete response
     return CompleteResponse(
-        weatherCode=weather_data["current"]["weather"][0]["id"],
+        weatherCode=weather_code,
         weatherDescription=weather_data["current"]["weather"][0]["description"],
-        playlist=PlayList(
-            name="Playlist for " + mood,
-            id="spotify_playlist_id",  # Placeholder
-            tracks=[]  # Placeholder: This should be a list of Track objects
+        playlist=new_playlist
         )
-    )
 
 @app.get("/callback")
 def callback(code: str):
@@ -217,7 +220,8 @@ def create_playlist(playlist: PlayList):
     return playlist_created["external_urls"]["spotify"]
 
 if __name__ == "__main__":
-    playlist = get_top_50("US")
-    create_playlist(playlist)
-    print("Playlist created successfully")
-    print(playlist)
+    load_city_data()
+    playlist = get_top_50("CA")
+    new_playlist = asyncio.run(get_mood_filtered("Calgary", playlist))
+    print(new_playlist)
+    create_playlist(new_playlist.playlist)
