@@ -6,3 +6,4 @@ python-dotenv
 pylast
 pydantic
 httpx
+asyncio
