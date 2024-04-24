@@ -154,6 +154,7 @@ def get_cities():
     cities = []
     for city in all_cities.keys():
         cities.append(Cities(name=city, country=all_cities[city]['country'], iso2=all_cities[city]['iso2'], lat=all_cities[city]['lat'], lon=all_cities[city]['lon']))
+    print(cities)
     return cities
 
 @app.get("/login")
@@ -231,7 +232,7 @@ def get_top_50(country_code: str):
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=[""]))
     return PlayList(name="Top 50 ", id=results['playlists']['items'][0]['id'], tracks=tracksList)
 
-@app.get("/spotify-playlist/")
+@app.post("/spotify-playlist/")
 def create_playlist(playlist: PlayList):
     spotify = get_spotify_client()
     tracks = playlist.tracks
@@ -244,7 +245,7 @@ def create_playlist(playlist: PlayList):
 
 if __name__ == "__main__":
     load_city_data()
-    playlist = get_top_50("CA")
-    new_playlist = asyncio.run(get_mood_filtered("Calgary", playlist))
+    playlist = get_top_50("JP")
+    new_playlist = asyncio.run(get_mood_filtered("Tokyo", playlist))
     print(new_playlist)
     create_playlist(new_playlist.playlist)
