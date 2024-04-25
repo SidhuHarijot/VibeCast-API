@@ -216,8 +216,8 @@ def _get_mood_filtered(city: str, playlist: PlayList, moods: list[str], weather_
         playlist=new_playlist
         )
 
-@app.get("/moodFiltered/moods")
-async def get_mood_filtered(city: str, mood: list[str], playlist: PlayList):
+@app.post("/moodFiltered/moods", response_model=CompleteResponse)
+async def get_mood_filtered(mood: list[str], playlist: PlayList):
     return _get_mood_filtered("", playlist, mood)
 
 
