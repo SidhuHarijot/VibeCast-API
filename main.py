@@ -180,7 +180,7 @@ def login():
     return RedirectResponse(auth_url)
 
 
-@app.get("/moodFiltered/{city}", response_model=CompleteResponse)
+@app.post("/moodFiltered/{city}", response_model=CompleteResponse)
 async def get_mood_filtered_location(city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
