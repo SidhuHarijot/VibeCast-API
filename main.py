@@ -160,6 +160,7 @@ class CompleteResponse(BaseModel):
     weatherCode: int
     weatherDescription: str
     playlist: PlayList
+    moods: list[str]
 #endregion
 
 #region Routes
@@ -213,7 +214,8 @@ def _get_mood_filtered(city: str, playlist: PlayList, moods: list[str], weather_
     return CompleteResponse(
         weatherCode=weather_code,
         weatherDescription=weather_description,
-        playlist=new_playlist
+        playlist=new_playlist,
+        moods=moods
         )
 
 @app.post("/moodFiltered/moods", response_model=CompleteResponse)
