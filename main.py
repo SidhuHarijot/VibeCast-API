@@ -97,8 +97,10 @@ origins = [
     "http://localhost:5000",
     "https://vibecast.vercel.app/",
     "https://vibecast.vercel.app",
-    "https://vibecast-harijot-singhs-projects.vercel.app/",
-    ""
+    "vibecast-git-main-harijot-singhs-projects.vercel.app",
+    "vibecast-git-main-harijot-singhs-projects.vercel.app/",
+    "vibecast-2p9k7l236-harijot-singhs-projects.vercel.app",
+    "vibecast-2p9k7l236-harijot-singhs-projects.vercel.app/",
 ]
 
 app.add_middleware(
