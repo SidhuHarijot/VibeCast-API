@@ -276,7 +276,7 @@ def get_top_50(country_code: str):
         if taglist != []:
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
-            genres = [genre for artist in track['track']['artists'] for genre in artist['genres']]
+            genres = [genre for artist in track['track']['artists'] for genre in artist['genres']] if track['track']['artists']["genres"] else []
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=genres, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
     return PlayList(name=f"Top 50 {country_name} {date.today()}", id=results['playlists']['items'][0]['id'], tracks=tracksList)
 
