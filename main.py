@@ -180,11 +180,11 @@ def login():
     return RedirectResponse(auth_url)
 
 
-@app.post("/moodFiltered/{city}", response_model=CompleteResponse)
-async def get_mood_filtered_location(city: str, playlist: PlayList):
+@app.post("/moodFiltered/{country_code}/{city}", response_model=CompleteResponse)
+async def get_mood_filtered_location(country_code: str, city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
-    cityData = all_cities.get(city)
+    cityData = all_cities.get((city, country_code))
     lat, lon = cityData.get('lat'), cityData.get('lon')
     weather_url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly,daily,alerts&appid={openweather_api_key}&units=metric"
     
