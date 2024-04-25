@@ -223,7 +223,7 @@ async def get_mood_filtered(city: str, mood: list[str], playlist: PlayList):
 
 @app.get("/get/moods")
 def get_moods():
-    return mood_genre_mapping.keys()
+    return [*mood_genre_mapping.keys()]
 
 
 @app.get("/callback")
@@ -311,7 +311,4 @@ def create_playlist(playlist: PlayList):
 
 if __name__ == "__main__":
     load_city_data()
-    playlist = get_top_50("IN")
-    new_playlist = asyncio.run(get_mood_filtered_location("New Delhi", playlist=playlist))
-    print(new_playlist)
-    print(create_playlist(new_playlist.playlist))
+    print(get_moods())
