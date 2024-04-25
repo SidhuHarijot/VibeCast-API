@@ -181,7 +181,7 @@ def login():
 
 
 @app.get("/moodFiltered/{city}", response_model=CompleteResponse)
-async def get_mood_filtered(city: str, playlist: PlayList):
+async def get_mood_filtered_location(city: str, playlist: PlayList):
     """ Get the mood-filtered playlist for a city """
     # Find the city in the list of cities
     cityData = all_cities.get(city)
@@ -276,10 +276,21 @@ def get_top_50(country_code: str):
         if taglist != []:
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
-            genres = [genre for artist in track['track']['artists'] for genre in artist['genres']] if track['track']['artists']["genres"] else []
+            genres = get_artist_genres(track['track']['artists'])
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=genres, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
     return PlayList(name=f"Top 50 {country_name} {date.today()}", id=results['playlists']['items'][0]['id'], tracks=tracksList)
 
+
+def get_artist_genres(artists: list):
+    """ Returns the genres of an artist """
+    genres = []
+    for artist in artists:
+        try:
+            if artist["genres"]:
+                genres.extend(artist["genres"])
+        except KeyError:
+            continue
+    return genres
 
 
 @app.post("/spotify-playlist/")
@@ -299,7 +310,7 @@ def create_playlist(playlist: PlayList):
 
 if __name__ == "__main__":
     load_city_data()
-    playlist = get_top_50("JP")
-    new_playlist = asyncio.run(get_mood_filtered("Tokyo", playlist))
+    playlist = get_top_50("IN")
+    new_playlist = asyncio.run(get_mood_filtered_location("New Delhi", playlist=playlist))
     print(new_playlist)
-    create_playlist(new_playlist.playlist)
+    print(create_playlist(new_playlist.playlist))
