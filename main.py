@@ -271,8 +271,9 @@ def get_top_50(country_code: str):
         except pylast.WSError:
             tags = None
         taglist = []
-        for tag in tags:
-            taglist.append(tag.item.get_name())
+        if tags is not None:
+            for tag in tags:
+                taglist.append(tag.item.get_name())
         if taglist != []:
             tracksList.append(Track(name=track['track']['name'], id=track['track']['id'], genre=taglist, external_url=track['track']['external_urls']['spotify'], artists=[artist['name'] for artist in track['track']['artists']]))
         else:
