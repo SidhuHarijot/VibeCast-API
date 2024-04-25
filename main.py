@@ -115,7 +115,7 @@ def load_city_data():
     with open('data/worldcities.csv', 'r', encoding='utf-8') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            all_cities[row['city_ascii']] = {"country": row['country'], "iso2": row['iso2'], "lat": float(row['lat']), "lon": float(row['lng'])}
+            all_cities[[row['city_ascii'], row["iso2"]]] = {"country": row['country'], "iso2": row['iso2'], "lat": float(row['lat']), "lon": float(row['lng'])}
 #endregion
 
 #region Environment Variables
@@ -167,8 +167,8 @@ class CompleteResponse(BaseModel):
 @app.get("/cities", response_model=list[Cities])
 def get_cities():
     cities = []
-    for city in all_cities.keys():
-        cities.append(Cities(name=city, country=all_cities[city]['country'], iso2=all_cities[city]['iso2'], lat=all_cities[city]['lat'], lon=all_cities[city]['lon']))
+    for [city, iso2] in all_cities.keys():
+        cities.append(Cities(name=city, country=all_cities[[city, iso2]]['country'], iso2=all_cities[[city, iso2]]['iso2'], lat=all_cities[[city, iso2]]['lat'], lon=all_cities[[city, iso2]]['lon']))
     print(cities)
     return cities
 
