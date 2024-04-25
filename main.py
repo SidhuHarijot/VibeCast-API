@@ -169,7 +169,6 @@ def get_cities():
     cities = []
     for [city, iso2] in all_cities.keys():
         cities.append(Cities(name=city, country=all_cities[[city, iso2]]['country'], iso2=all_cities[[city, iso2]]['iso2'], lat=all_cities[[city, iso2]]['lat'], lon=all_cities[[city, iso2]]['lon']))
-    print(cities)
     return cities
 
 
